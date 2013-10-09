@@ -1,4 +1,5 @@
 #-*-encoding:utf-8-*-
+import commands
 import hashlib
 import json
 import logging
@@ -93,16 +94,45 @@ def append_path_to_fragment(f):
     return paths
 
 
+def create_send_billing_files_command(path, remote_address):
+    return "rsync -av " + path + remote_address
+
+
+def create_rm_command(path):
+    return "rm -f " + path
+
+
+
+def execute_linux_command(_command):
+    try:
+        a, b = commands.getstatusoutput(_command)
+    except Exception, e:
+        logger.error(e)
+
+
+def send_file():
+    remote_ip = '192.168.131.198'
+    remote_device_alias_name = 'CcSnp'
+    remote_address = " fromcf@" + remote_ip + "::" + remote_device_alias_name
+    path = "/Application/billing/billingSync/tgz/*.tgz"
+    send_command = create_send_billing_files_command(path, remote_address)
+    _create_rm_command = create_rm_command(path)
+    logger.info(send_command)
+    logger.info(_create_rm_command)
+    # execute_linux_command(send_command)
+    # execute_linux_command(_create_rm_command)
+
 if __name__ == '__main__':
     url = create_api()
     print url
     data = get_billing_filename(url)
-    logger.info('read file size is [ ' + len(data) + ' ]')
+    logger.info('read file size is [ ' + str(len(data)) + ' ]')
     fragments = split_list(data)
     for f in fragments:
         f = append_path_to_fragment(f)
         create_tar_file(f)
         append_md5("tmp")
+    send_file()
 
 
 class MyTests(unittest.TestCase):
