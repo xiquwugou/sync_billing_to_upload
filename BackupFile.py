@@ -11,12 +11,16 @@ class BackupFile(object):
     def __init__(self, fileName):
         self.__filename = fileName
 
+    # add upload dir in prefix, so easy!
     def add_files(self, file_list):
-        backup_file = tarfile.open(self.__filename, 'w')
+        backup_file = tarfile.open(self.__filename, 'w:gz')
         try:
             for fl in file_list:
-                tarinfo = backup_file.gettarinfo(fl, os.path.basename(fl))
-                backup_file.addfile(tarinfo, open(fl, 'rb'))
+                try:
+                    tarinfo = backup_file.gettarinfo(fl, "upload/" + os.path.basename(fl))
+                    backup_file.addfile(tarinfo, open(fl, 'rb'))
+                except Exception, e:
+                    continue
         finally:
             backup_file.close()
 
